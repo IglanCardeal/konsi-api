@@ -20,9 +20,14 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@nestjs/bull": "^10.2.2",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/elasticsearch": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
+    "amqplib": "^0.10.5",
+    "redis": "^4.7.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
