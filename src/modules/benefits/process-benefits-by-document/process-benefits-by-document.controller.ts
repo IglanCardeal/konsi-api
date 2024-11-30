@@ -2,7 +2,7 @@ import { Body, Controller, Put } from '@nestjs/common';
 import { ProcessBenefitsByDocumentUseCase } from './process-benefits-by-document.usecase';
 import { ProcessBenefitsByDocumentDTO } from './process-benefits-by-document.dto';
 
-@Controller('process-by-document')
+@Controller('process-documents')
 export class ProcessBenefitsByDocumentController {
   constructor(
     private readonly processBenefitsByDocumentUseCase: ProcessBenefitsByDocumentUseCase,
