@@ -1,21 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { CONSTANTS } from 'src/constants';
+import { ILogger } from 'src/shared/logger/logger.interface';
 
 @Injectable()
 export class ESService {
-  constructor(private readonly elasticsearchService: ElasticsearchService) {}
+  constructor(
+    private readonly elasticsearchService: ElasticsearchService,
+    @Inject('logger') private readonly logger: ILogger,
+  ) {}
 
   async searchByDocument(cpf: string) {
-    const { hits } = await this.elasticsearchService.search({
-      index: CONSTANTS.elasticsearch.benefitsIndex,
-      body: {
-        query: {
-          match: { cpf },
+    try {
+      const { hits } = await this.elasticsearchService.search({
+        index: CONSTANTS.elasticsearch.benefitsIndex,
+        body: {
+          query: {
+            match: { cpf },
+          },
         },
-      },
-    });
-    return hits.hits.map((hit) => hit._source);
+      });
+      return hits.hits.map((hit) => hit._source);
+    } catch (error) {
+      this.logger.error(
+        `[${ESService.name}.searchByDocument()] Error searching document data`,
+        error,
+      );
+      throw error;
+    }
   }
 
   async index<T>({
@@ -25,12 +37,20 @@ export class ESService {
     cpf: string;
     benefitsData: T;
   }): Promise<void> {
-    await this.elasticsearchService.index({
-      index: CONSTANTS.elasticsearch.benefitsIndex,
-      body: {
-        cpf,
-        benefitsData,
-      },
-    });
+    try {
+      await this.elasticsearchService.index({
+        index: CONSTANTS.elasticsearch.benefitsIndex,
+        body: {
+          cpf,
+          benefitsData,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `[${ESService.name}.index()] Error indexing document data`,
+        error,
+      );
+      throw error;
+    }
   }
 }
