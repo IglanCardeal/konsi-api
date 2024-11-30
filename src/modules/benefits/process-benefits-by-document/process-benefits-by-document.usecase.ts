@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProcessBenefitsByDocumentDTO } from './process-benefits-by-document.dto';
-import { ProcessDocumentsQueueService } from 'src/services/queue/queue.service';
+import { QueueService } from 'src/services/queue/queue.service';
 import { ILogger } from 'src/shared/logger/logger.interface';
 
 @Injectable()
 export class ProcessBenefitsByDocumentUseCase {
   constructor(
-    private readonly processDocumentsQueueService: ProcessDocumentsQueueService,
+    private readonly processDocumentsQueueService: QueueService,
     @Inject('logger') private readonly logger: ILogger,
   ) {}
 
@@ -19,7 +19,10 @@ export class ProcessBenefitsByDocumentUseCase {
     try {
       await this.processDocumentsQueueService.add<string[]>(documents);
     } catch (error) {
-      this.logger.error('Error adding documents to queue', error);
+      this.logger.error(
+        `[${ProcessBenefitsByDocumentUseCase.name}] Error adding documents to queue`,
+        error,
+      );
       throw error;
     }
   }
