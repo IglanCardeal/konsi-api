@@ -1,4 +1,3 @@
-// src/shared/logger/logger.service.ts
 import { ILogger } from 'src/shared/logger/logger.interface';
 
 export class LoggerService implements ILogger {
