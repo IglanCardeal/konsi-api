@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProcessBenefitsByDocumentUseCase } from '../process-benefits-by-document.usecase';
-import { ProcessDocumentsQueueService } from 'src/services/queue/queue.service';
+import { QueueService } from 'src/services/queue/queue.service';
 import { ILogger } from 'src/shared/logger/logger.interface';
 
 describe('ProcessBenefitsByDocumentUseCase', () => {
   let useCase: ProcessBenefitsByDocumentUseCase;
-  let queueService: ProcessDocumentsQueueService;
+  let queueService: QueueService;
   let logger: ILogger;
 
   const mockQueueService = {
@@ -21,7 +21,7 @@ describe('ProcessBenefitsByDocumentUseCase', () => {
       providers: [
         ProcessBenefitsByDocumentUseCase,
         {
-          provide: ProcessDocumentsQueueService,
+          provide: QueueService,
           useValue: mockQueueService,
         },
         {
@@ -34,9 +34,7 @@ describe('ProcessBenefitsByDocumentUseCase', () => {
     useCase = module.get<ProcessBenefitsByDocumentUseCase>(
       ProcessBenefitsByDocumentUseCase,
     );
-    queueService = module.get<ProcessDocumentsQueueService>(
-      ProcessDocumentsQueueService,
-    );
+    queueService = module.get<QueueService>(QueueService);
     logger = module.get<ILogger>('logger');
   });
 
@@ -67,7 +65,7 @@ describe('ProcessBenefitsByDocumentUseCase', () => {
       await expect(useCase.execute({ documents })).rejects.toThrow(error);
 
       expect(logger.error).toHaveBeenCalledWith(
-        'Error adding documents to queue',
+        `[${ProcessBenefitsByDocumentUseCase.name}] Error adding documents to queue`,
         error,
       );
       expect(queueService.add).toHaveBeenCalledWith(documents);
