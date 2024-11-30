@@ -20,6 +20,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.16.2",
     "@nestjs/bull": "^10.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -71,6 +72,10 @@
       "**/*.(usecase|service).(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageProvider": "v8",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   }
 }
