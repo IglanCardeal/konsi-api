@@ -70,7 +70,9 @@ INSS_API_PASSWORD=
 $ docker-compose up -d
 ```
 
-A API estará disponível em `http://localhost:3000`
+O processo de build dos containers e a subida do servidor podem levar alguns minutos. Verifique os logs do container `konsi-api` e veja se o servidor subiu corretamente.
+
+Para testar, acesse `http://localhost:3000/api` para entrar na interface do Swagger.
 
 ## Interface
 
