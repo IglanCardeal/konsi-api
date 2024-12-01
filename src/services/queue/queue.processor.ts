@@ -21,8 +21,13 @@ export class QueueProcessor {
    */
   @Process(CONSTANTS.queue.processDocumentsQueueJobName)
   async handleProcessBenefits(job: Job<string[]>) {
+    const documents = job.data;
+
     try {
-      const documents = job.data;
+      this.logger.info(
+        `[${QueueProcessor.name}.handleProcessBenefits()] Starting process documents`,
+        { documents },
+      );
 
       for (const cpf of documents) {
         // Verificar cache Redis
@@ -41,9 +46,14 @@ export class QueueProcessor {
         // Salvar no cache do Redis
         await this.redisService.set(cpf, {});
       }
+
+      this.logger.info(
+        `[${QueueProcessor.name}.handleProcessBenefits()] Process documents success`,
+        { documents },
+      );
     } catch (error) {
       this.logger.error(
-        `[${QueueProcessor.name}.handleProcessBenefits()] Error while processing document`,
+        `[${QueueProcessor.name}.handleProcessBenefits()] Error while processing documents: ${documents.join(', ')}`,
         error,
       );
     }

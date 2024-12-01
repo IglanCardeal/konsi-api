@@ -16,6 +16,10 @@ export class QueueService {
     try {
       const JOB_NAME = CONSTANTS.queue.processDocumentsQueueJobName;
       await this.queue.add(JOB_NAME, data);
+      this.logger.info(
+        `[${QueueService.name}.add()] Added data to queue with success`,
+        data,
+      );
     } catch (error) {
       this.logger.error(
         `[${QueueService.name}.add()] Error add data to queue`,
