@@ -1,5 +1,90 @@
 # Desafio Software Engineer - Backend - Node
 
+![example workflow](https://github.com/IglanCardeal/konsi-api/actions/workflows/test-coverage.yml/badge.svg)
+
+API para recuperação e processamento de informações de benefícios do INSS.
+
+## Como rodar
+
+### Pré-requisitos
+
+Instalados na sua máquina:
+
+- Git
+- Docker
+- Docker Compose
+
+### Quick Start
+
+1. Clone o repositório:
+
+```bash
+$ git clone https://github.com/IglanCardeal/konsi-api
+$ cd konsi-api
+```
+
+2. Crie o arquivo `.env` se baseando no arquivo `.env.example`:
+
+```bash
+$ cp .env.example .env
+```
+
+3. Defina as credenciais:
+
+```env
+INSS_API_USER=
+INSS_API_PASSWORD=
+```
+
+4. Rode o comando do docker compose para iniciar a aplicação:
+
+```bash
+$ docker-compose up -d
+```
+
+A API estará disponível em `http://localhost:3000`
+
+## Interface
+
+O Swagger foi usado para documentar as rotas e incluir uma interface web para testar as rotas:
+
+- `/benefits/process-documents` (PUT) -> Para processar uma lista de CPFs
+- `/benefits/consult-benefits` (GET) -> Para consultar um CPF previamente processado
+
+A rota da documentação do swagger pode ser acessada em `http://localhost:3000/api`.
+
+![1](./docs/swagger.png)
+
+## GitHub Actions - Test Coverage
+
+Este projeto utiliza GitHub Actions para automatizar a execução de testes e a geração de relatórios de cobertura de código. Foram criados testes de unidade para arquivos do tipo `service`, `processor` e `usecase`, onde se encontram as principais regras de fluxo da aplicação e foram atingidos 100% de covertura.
+
+![1](./docs/coverage.png)
+
+A configuração do workflow está definida para ser executada nas seguintes situações:
+
+- Push na branch `main`
+- Pull requests direcionados à branch `main`
+
+### Jobs
+
+- **Run Tests**: Este job é executado em um ambiente Ubuntu e segue os seguintes passos:
+  - Checkout do repositório
+  - Configuração do Node.js na versão 20, com cache de dependências
+  - Cache das dependências do npm
+  - Instalação das dependências (somente se o cache não estiver disponível)
+  - Execução dos testes com geração de relatórios de cobertura
+  - Cache dos resultados de cobertura
+  - Upload dos relatórios de cobertura para serem armazenados como artefatos no GitHub
+
+Essa configuração garante que os testes sejam executados automaticamente e que os relatórios de cobertura estejam sempre disponíveis, melhorando a qualidade do código e facilitando a detecção de problemas.
+
+As actions do projeto podem ser consultadas em https://github.com/IglanCardeal/konsi-api/actions.
+
+---
+
+## Descrição do desafio
+
 Olá! Esse desafio técnico tem como propósito medir suas habilidades, ver como estuda, pensa e se organiza na prática. A stack tecnológica utilizada é de sua escolha. Solicitamos que seja utilizado Node com Typescript.
 
 Após finalizar o desafio, nos envie um link para repositório do projeto.
