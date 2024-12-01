@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { RedisClientType, createClient } from 'redis';
 import { ConfigService } from '@nestjs/config';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class RedisService {
   private client: RedisClientType;
   private readonly cacheExpiration: number;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: LoggerService,
+  ) {
     const host = this.configService.getOrThrow<string>('REDIS_HOST');
     const port = this.configService.getOrThrow<number>('REDIS_PORT');
     const redisConfig: any = {
@@ -18,10 +22,10 @@ export class RedisService {
     this.cacheExpiration =
       this.configService.get<number>('REDIS_CACHE_TTL') || ONE_HOUR;
     this.client.on('error', (err) => {
-      console.error('Redis Client Error:', err);
+      this.logger.error(`[${RedisService.name}] Redis Client Error:`, err);
     });
     this.client.connect().catch((err) => {
-      console.error('Redis Connection Error:', err);
+      this.logger.error(`[${RedisService.name}] Redis Connection Error:`, err);
     });
   }
 
@@ -30,7 +34,7 @@ export class RedisService {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error('Redis Get Error:', error);
+      this.logger.error(`[${RedisService.name}] Redis Get Error:`, error);
       throw error;
     }
   }
@@ -41,7 +45,7 @@ export class RedisService {
         EX: this.cacheExpiration,
       });
     } catch (error) {
-      console.error('Redis Set Error:', error);
+      this.logger.error(`[${RedisService.name}] Redis Set Error:`, error);
       throw error;
     }
   }

@@ -2,12 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { ESService } from '../elasticsearch.service';
 import { CONSTANTS } from 'src/constants';
-import { ILogger } from 'src/shared/logger/logger.interface';
+import { LoggerService } from 'src/services/logger/logger.service';
 
 describe('ESService', () => {
   let service: ESService;
   let elasticsearchService: ElasticsearchService;
-  let logger: ILogger;
+  let logger: LoggerService;
 
   const mockCpf = '12345678900';
   const mockBenefitsData = {
@@ -46,7 +46,7 @@ describe('ESService', () => {
           useValue: mockElasticsearchService,
         },
         {
-          provide: 'logger',
+          provide: LoggerService,
           useValue: mockLogger,
         },
       ],
@@ -55,7 +55,7 @@ describe('ESService', () => {
     service = module.get<ESService>(ESService);
     elasticsearchService =
       module.get<ElasticsearchService>(ElasticsearchService);
-    logger = module.get<ILogger>('logger');
+    logger = module.get<LoggerService>(LoggerService);
   });
 
   afterEach(() => {

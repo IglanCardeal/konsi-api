@@ -3,12 +3,14 @@ import { Job } from 'bull';
 import { RedisService } from '../redis/redis.service';
 import { CONSTANTS } from 'src/constants';
 import { ESService } from '../elasticsearch/elasticsearch.service';
+import { LoggerService } from '../logger/logger.service';
 
 @Processor(CONSTANTS.queue.processDocumentsQueueName)
 export class QueueProcessor {
   constructor(
     private readonly redisService: RedisService,
     private readonly esService: ESService,
+    private readonly logger: LoggerService,
   ) {}
 
   /**
@@ -19,24 +21,31 @@ export class QueueProcessor {
    */
   @Process(CONSTANTS.queue.processDocumentsQueueJobName)
   async handleProcessBenefits(job: Job<string[]>) {
-    const documents = job.data;
+    try {
+      const documents = job.data;
 
-    for (const cpf of documents) {
-      // Verificar cache Redis
-      const cachedData = await this.redisService.get(cpf);
-      if (cachedData) continue;
+      for (const cpf of documents) {
+        // Verificar cache Redis
+        const cachedData = await this.redisService.get(cpf);
+        if (cachedData) continue;
 
-      // Gerar o token e buscar os benefícios
-      const _token = 'any';
+        // Gerar o token e buscar os benefícios
+        const _token = 'any';
 
-      // Indexar no Elasticsearch
-      await this.esService.index({
-        cpf,
-        benefitsData: {}, // data from external API
-      });
+        // Indexar no Elasticsearch
+        await this.esService.index({
+          cpf,
+          benefitsData: {}, // data from external API
+        });
 
-      // Salvar no cache do Redis
-      await this.redisService.set(cpf, {});
+        // Salvar no cache do Redis
+        await this.redisService.set(cpf, {});
+      }
+    } catch (error) {
+      this.logger.error(
+        `[${QueueProcessor.name}.handleProcessBenefits()] Error while processing document`,
+        error,
+      );
     }
   }
 }

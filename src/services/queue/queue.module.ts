@@ -7,6 +7,7 @@ import { CONSTANTS } from 'src/constants';
 import { QueueProcessor } from './queue.processor';
 import { RedisModule } from '../redis/redis.module';
 import { ElasticModule } from '../elasticsearch/elasticsearch.module';
+import { LoggerService } from '../logger/logger.service';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { ElasticModule } from '../elasticsearch/elasticsearch.module';
     RedisModule,
     ElasticModule,
   ],
-  providers: [QueueService, QueueProcessor, RedisService],
+  providers: [QueueService, QueueProcessor, RedisService, LoggerService],
   exports: [QueueService],
 })
 export class QueueModule {}

@@ -1,13 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { CONSTANTS } from 'src/constants';
-import { ILogger } from 'src/shared/logger/logger.interface';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class ESService {
   constructor(
     private readonly elasticsearchService: ElasticsearchService,
-    @Inject('logger') private readonly logger: ILogger,
+    private readonly logger: LoggerService,
   ) {}
 
   async searchByDocument(cpf: string) {
