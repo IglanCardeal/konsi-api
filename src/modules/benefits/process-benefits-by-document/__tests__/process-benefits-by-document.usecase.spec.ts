@@ -48,8 +48,8 @@ describe('ProcessBenefitsByDocumentUseCase', () => {
     it('should successfully add documents to queue', async () => {
       await useCase.execute({ documents });
 
-      expect(queueService.add).toHaveBeenCalledTimes(1);
-      expect(queueService.add).toHaveBeenCalledWith(documents);
+      expect(queueService.add).toHaveBeenCalledTimes(3);
+      expect(queueService.add).toHaveBeenNthCalledWith(1, documents[0]);
     });
 
     it('should not call queue service when documents array is empty', async () => {
@@ -68,7 +68,7 @@ describe('ProcessBenefitsByDocumentUseCase', () => {
         `[${ProcessBenefitsByDocumentUseCase.name}] Error adding documents to queue`,
         error,
       );
-      expect(queueService.add).toHaveBeenCalledWith(documents);
+      expect(queueService.add).toHaveBeenCalledWith(documents[0]);
     });
   });
 });
