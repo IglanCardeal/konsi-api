@@ -4,6 +4,34 @@
 
 API para recuperação e processamento de informações de benefícios do INSS.
 
+## Fluxo da Aplicação
+
+```mermaid
+graph TD;
+    A[Receber dados de CPF] -->|Colocar na fila do RabbitMQ| B[RabbitMQ]
+    B -->|Consumir CPF da fila| C[Verificar cache no Redis]
+    C --> D{Cache encontrado?}
+    D -->|Sim| E[Encerra o processamento]
+    D -->|Não| F[Consultar API externa do INSS]
+    F --> G[Salvar dados no Redis]
+    F --> H[Salvar dados no Elasticsearch]
+    H --> I[Interface Web]
+    I -->|Consultar dados no Elasticsearch| J[Buscar informações de matrícula]
+```
+
+### Descrição do Fluxo
+
+1. **Receber dados de CPF**: A API recebe uma lista de CPFs e os coloca em uma fila do RabbitMQ.
+2. **Consumir CPF da fila**: O RabbitMQ processa cada CPF individualmente.
+3. **Verificar cache no Redis**: Antes de consultar a API externa, a aplicação verifica se os dados do CPF estão no cache do Redis.
+   - **Cache encontrado?**:
+     - **Sim**: Encerra o processamento para evitar sobrecarregar API externa por 1 hora (TTL do cache).
+     - **Não**: Consulta a API externa do INSS.
+4. **Consultar API externa do INSS**: Se o CPF não estiver no cache, a aplicação faz uma chamada à API externa.
+5. **Salvar dados no Redis**: Os dados retornados pela API são salvos no Redis por 1 hora para evitar reprocessamento.
+6. **Salvar dados no Elasticsearch**: Os dados também são indexados no Elasticsearch para futuras consultas.
+7. **Interface Web**: A interface web permite buscar dados de matrícula, verificando no Elasticsearch se há informações disponíveis.
+
 ## Como rodar
 
 ### Pré-requisitos
