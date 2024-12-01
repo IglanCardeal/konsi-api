@@ -4,6 +4,7 @@ import { RedisService } from '../redis/redis.service';
 import { CONSTANTS } from 'src/constants';
 import { ESService } from '../elasticsearch/elasticsearch.service';
 import { LoggerService } from '../logger/logger.service';
+import { INSSService } from '../inss/inss.service';
 
 @Processor(CONSTANTS.queue.processDocumentsQueueName)
 export class QueueProcessor {
@@ -11,6 +12,7 @@ export class QueueProcessor {
     private readonly redisService: RedisService,
     private readonly esService: ESService,
     private readonly logger: LoggerService,
+    private readonly inssService: INSSService,
   ) {}
 
   /**
@@ -33,14 +35,15 @@ export class QueueProcessor {
         const cachedData = await this.redisService.get(cpf);
         if (cachedData) continue;
 
-        const _token = 'any';
-
-        await this.esService.index({
+        const benefitsData = await this.inssService.getBenefitsData(cpf);
+        const data = {
           cpf,
-          benefitsData: {},
-        });
+          benefitsData,
+        };
 
-        await this.redisService.set(cpf, {});
+        await this.esService.index(data);
+
+        await this.redisService.set(cpf, data);
       }
 
       this.logger.info(

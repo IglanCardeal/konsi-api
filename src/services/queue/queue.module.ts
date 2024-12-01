@@ -8,6 +8,7 @@ import { QueueProcessor } from './queue.processor';
 import { RedisModule } from '../redis/redis.module';
 import { ElasticModule } from '../elasticsearch/elasticsearch.module';
 import { LoggerService } from '../logger/logger.service';
+import { INSSService } from '../inss/inss.service';
 
 @Module({
   imports: [
@@ -28,7 +29,13 @@ import { LoggerService } from '../logger/logger.service';
     RedisModule,
     ElasticModule,
   ],
-  providers: [QueueService, QueueProcessor, RedisService, LoggerService],
+  providers: [
+    QueueService,
+    QueueProcessor,
+    RedisService,
+    LoggerService,
+    INSSService,
+  ],
   exports: [QueueService],
 })
 export class QueueModule {}
