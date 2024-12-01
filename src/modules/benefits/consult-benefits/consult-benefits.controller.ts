@@ -6,7 +6,7 @@ import {
 } from './consult-benefits.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('benefits')
+@ApiTags('Benefits')
 @Controller('consult-benefits')
 export class ConsultBenefitsController {
   constructor(
