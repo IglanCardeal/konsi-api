@@ -94,6 +94,30 @@ describe('ESService', () => {
       expect(logger.error).not.toHaveBeenCalled();
     });
 
+    it('should return empty array when elastic throw a index_not_found_exception', async () => {
+      const elasticsearchError = {
+        meta: {
+          body: {
+            error: {
+              type: 'index_not_found_exception',
+              reason: 'index [benefits] not found',
+            },
+            status: 404,
+          },
+        },
+      };
+
+      mockElasticsearchService.search.mockImplementationOnce(() => {
+        throw elasticsearchError;
+      });
+
+      const result = await service.searchByDocument(mockCpf);
+
+      expect(result).toEqual([]);
+      expect(elasticsearchService.search).toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
+    });
+
     it('should log error and rethrow when elasticsearch search fails', async () => {
       const error = new Error('Elasticsearch error');
       mockElasticsearchService.search.mockRejectedValueOnce(error);
