@@ -28,7 +28,7 @@ describe('ESService', () => {
   };
   const mockElasticsearchService = {
     search: jest.fn(),
-    index: jest.fn(),
+    update: jest.fn(),
   };
   const mockLogger = {
     error: jest.fn(),
@@ -108,23 +108,27 @@ describe('ESService', () => {
 
   describe('index', () => {
     it('should successfully index document with CPF and benefits data', async () => {
-      mockElasticsearchService.index.mockResolvedValueOnce({});
+      mockElasticsearchService.update.mockResolvedValueOnce({});
 
       await service.index({ cpf: mockCpf, benefitsData: mockBenefitsData });
 
-      expect(elasticsearchService.index).toHaveBeenCalledWith({
+      expect(elasticsearchService.update).toHaveBeenCalledWith({
         index: CONSTANTS.elasticsearch.benefitsIndex,
         body: {
-          cpf: mockCpf,
-          benefitsData: mockBenefitsData,
+          doc: {
+            cpf: mockCpf,
+            benefitsData: mockBenefitsData,
+          },
+          doc_as_upsert: true,
         },
+        id: mockCpf,
       });
       expect(logger.error).not.toHaveBeenCalled();
     });
 
     it('should log error and rethrow when elasticsearch indexing fails', async () => {
       const error = new Error('Indexing error');
-      mockElasticsearchService.index.mockRejectedValueOnce(error);
+      mockElasticsearchService.update.mockRejectedValueOnce(error);
 
       await expect(
         service.index({ cpf: mockCpf, benefitsData: mockBenefitsData }),
@@ -143,19 +147,23 @@ describe('ESService', () => {
           key: 'value',
         },
       };
-      mockElasticsearchService.index.mockResolvedValueOnce({});
+      mockElasticsearchService.update.mockResolvedValueOnce({});
 
       await service.index({
         cpf: mockCpf,
         benefitsData: differentBenefitsData,
       });
 
-      expect(elasticsearchService.index).toHaveBeenCalledWith({
+      expect(elasticsearchService.update).toHaveBeenCalledWith({
         index: CONSTANTS.elasticsearch.benefitsIndex,
         body: {
-          cpf: mockCpf,
-          benefitsData: differentBenefitsData,
+          doc: {
+            cpf: mockCpf,
+            benefitsData: differentBenefitsData,
+          },
+          doc_as_upsert: true,
         },
+        id: mockCpf,
       });
       expect(logger.error).not.toHaveBeenCalled();
     });
