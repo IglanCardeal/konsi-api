@@ -1,13 +1,48 @@
 version: '3.8'
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: konsi-api
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_CACHE_TTL=3600
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - INSS_API_HOST=https://teste-dev-api.konsi.dev
+      - INSS_API_BENEFITS_PATH=/api/v1/inss/consulta-beneficios?cpf={cpf}
+      - INSS_API_AUTH_TOKEN_PATH=/api/v1/token
+      - INSS_API_USER=${INSS_API_USER}
+      - INSS_API_PASSWORD=${INSS_API_PASSWORD}
+    ports:
+      - "3000:3000"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node # rodar em um único nó para atender o desafio
+      - discovery.type=single-node
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m # quantidade de memória heap do Java para o Elasticsearch
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -17,6 +52,12 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redis:
     image: redis:latest
@@ -25,6 +66,12 @@ services:
       - "6379:6379"
     volumes:
       - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   esdata:
