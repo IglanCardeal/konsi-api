@@ -10,14 +10,15 @@ export class ProcessBenefitsByDocumentUseCase {
     @Inject('logger') private readonly logger: ILogger,
   ) {}
 
-  /**
-   * This method only will add an array of documents to the queue
-   */
   async execute({ documents }: ProcessBenefitsByDocumentDTO) {
     if (!documents.length) return;
 
     try {
-      await this.processDocumentsQueueService.add<string[]>(documents);
+      await Promise.all(
+        documents.map((document) =>
+          this.processDocumentsQueueService.add<string>(document),
+        ),
+      );
     } catch (error) {
       this.logger.error(
         `[${ProcessBenefitsByDocumentUseCase.name}] Error adding documents to queue`,
