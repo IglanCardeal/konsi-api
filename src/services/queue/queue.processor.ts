@@ -30,20 +30,16 @@ export class QueueProcessor {
       );
 
       for (const cpf of documents) {
-        // Verificar cache Redis
         const cachedData = await this.redisService.get(cpf);
         if (cachedData) continue;
 
-        // Gerar o token e buscar os benefícios
         const _token = 'any';
 
-        // Indexar no Elasticsearch
         await this.esService.index({
           cpf,
-          benefitsData: {}, // data from external API
+          benefitsData: {},
         });
 
-        // Salvar no cache do Redis
         await this.redisService.set(cpf, {});
       }
 
