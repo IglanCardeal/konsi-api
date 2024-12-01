@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '../logger/logger.service';
 import { RedisService } from '../redis/redis.service';
+import { BenefitsApiResponseMapped, BenefitsApiResponse } from './inss.dto';
 
 @Injectable()
 export class INSSService {
@@ -28,9 +29,17 @@ export class INSSService {
     );
   }
 
-  async getBenefitsData(cpf: string): Promise<any> {
+  async getBenefitsData(
+    cpf: string,
+    clearCacheToken: boolean = false,
+  ): Promise<BenefitsApiResponseMapped[]> {
     try {
-      const token = await this.getApiAuthToken();
+      this.logger.info(
+        `[${INSSService.name}.getBenefitsData()] Making api call`,
+        { cpf },
+      );
+
+      const token = await this.getApiAuthToken(clearCacheToken);
       const path = this.apiBenfitsRoutePath.replace('{cpf}', cpf);
       const response = await fetch(`${this.apiUrl}${path}`, {
         method: 'GET',
@@ -40,17 +49,25 @@ export class INSSService {
         },
       });
 
+      if (response.status === 401 && !clearCacheToken) {
+        this.logger.info(
+          `[${INSSService.name}.getBenefitsData()] Token expired. Getting new auth token.`,
+        );
+        return this.getBenefitsData(cpf, true);
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const {
-        data: { beneficios: benefits },
-      } = await response.json();
+      const { data } = await response.json();
+      const benefitsArr = data.beneficios as BenefitsApiResponse[];
 
-      if (!benefits) throw new Error(`HTTP error! Missing benefits data`);
+      if (!benefitsArr?.length) {
+        throw new Error(`HTTP error! Missing benefits data`);
+      }
 
-      return benefits;
+      return benefitsArr.map(this.mapBenefitData);
     } catch (error) {
       this.logger.error(
         `[${INSSService.name}.getBenefitsData()] Error while getting benefits data`,
@@ -60,11 +77,11 @@ export class INSSService {
     }
   }
 
-  private async getApiAuthToken(): Promise<string> {
+  private async getApiAuthToken(clearTokenCache = false): Promise<string> {
     try {
       const cachedToken = await this.redisService.get('inss-api-token');
 
-      if (cachedToken) return cachedToken;
+      if (cachedToken && !clearTokenCache) return cachedToken;
 
       const params = {
         method: 'POST',
@@ -101,5 +118,12 @@ export class INSSService {
       );
       throw error;
     }
+  }
+
+  private mapBenefitData(data: BenefitsApiResponse): BenefitsApiResponseMapped {
+    return {
+      number: data.numero_beneficio,
+      code: data.codigo_tipo_beneficio,
+    };
   }
 }
