@@ -20,7 +20,10 @@ export class QueueProcessor {
     const document = job.data;
 
     try {
-      await this.processDocument(document);
+      const data = await this.searchBenefitsByDocument(document);
+
+      await this.saveDataByDocument(document, data);
+
       this.logger.info(
         `[${QueueProcessor.name}.handleProcessBenefits()] Process document success`,
         { document },
@@ -33,16 +36,18 @@ export class QueueProcessor {
     }
   }
 
-  private async processDocument(cpf: string) {
+  private async searchBenefitsByDocument(cpf: string) {
     const cachedData = await this.redisService.get(cpf);
     if (cachedData) return;
 
     const benefitsData = await this.inssService.getBenefitsData(cpf);
-    const data = {
+    return {
       cpf,
       benefitsData,
     };
+  }
 
+  private async saveDataByDocument(cpf: string, data: any) {
     await this.esService.index(data);
     await this.redisService.set(cpf, data);
   }
