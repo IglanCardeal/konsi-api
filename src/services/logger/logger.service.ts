@@ -7,8 +7,8 @@ export class LoggerService implements ILogger {
     this.loggers = loggers.length ? loggers : [console];
   }
 
-  info(message: string): void {
-    this.loggers.forEach((logger) => logger.info(message));
+  info(message: string, data?: any): void {
+    this.loggers.forEach((logger) => logger.info(message, data));
   }
 
   error(message: string, error?: Error): void {
