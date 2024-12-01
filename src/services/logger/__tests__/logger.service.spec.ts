@@ -16,7 +16,7 @@ describe('LoggerService', () => {
 
       service.info('test message');
 
-      expect(consoleSpy).toHaveBeenCalledWith('test message');
+      expect(consoleSpy).toHaveBeenCalledWith('test message', undefined);
       consoleSpy.mockRestore();
     });
 
@@ -26,7 +26,7 @@ describe('LoggerService', () => {
 
       service.info('test message');
 
-      expect(mockLogger.info).toHaveBeenCalledWith('test message');
+      expect(mockLogger.info).toHaveBeenCalledWith('test message', undefined);
     });
 
     it('should handle multiple loggers', () => {
@@ -36,8 +36,8 @@ describe('LoggerService', () => {
 
       service.info('test message');
 
-      expect(mockLogger1.info).toHaveBeenCalledWith('test message');
-      expect(mockLogger2.info).toHaveBeenCalledWith('test message');
+      expect(mockLogger1.info).toHaveBeenCalledWith('test message', undefined);
+      expect(mockLogger2.info).toHaveBeenCalledWith('test message', undefined);
     });
   });
 
@@ -51,17 +51,18 @@ describe('LoggerService', () => {
 
     it('should call info on all loggers with the message', () => {
       const testMessage = 'test info message';
+      const anyData = {};
 
-      service.info(testMessage);
+      service.info(testMessage, anyData);
 
-      expect(mockLogger.info).toHaveBeenCalledWith(testMessage);
+      expect(mockLogger.info).toHaveBeenCalledWith(testMessage, anyData);
       expect(mockLogger.info).toHaveBeenCalledTimes(1);
     });
 
     it('should handle empty message', () => {
       service.info('');
 
-      expect(mockLogger.info).toHaveBeenCalledWith('');
+      expect(mockLogger.info).toHaveBeenCalledWith('', undefined);
     });
 
     it('should handle multiple calls', () => {
@@ -69,8 +70,16 @@ describe('LoggerService', () => {
       service.info('message 2');
 
       expect(mockLogger.info).toHaveBeenCalledTimes(2);
-      expect(mockLogger.info).toHaveBeenNthCalledWith(1, 'message 1');
-      expect(mockLogger.info).toHaveBeenNthCalledWith(2, 'message 2');
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        1,
+        'message 1',
+        undefined,
+      );
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        2,
+        'message 2',
+        undefined,
+      );
     });
   });
 
@@ -132,7 +141,7 @@ describe('LoggerService', () => {
 
       service.info(message);
 
-      expect(consoleSpy).toHaveBeenCalledWith(message);
+      expect(consoleSpy).toHaveBeenCalledWith(message, undefined);
       consoleSpy.mockRestore();
     });
 
