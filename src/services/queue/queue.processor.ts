@@ -5,6 +5,7 @@ import { CONSTANTS } from 'src/constants';
 import { ESService } from '../elasticsearch/elasticsearch.service';
 import { LoggerService } from '../logger/logger.service';
 import { INSSService } from '../inss/inss.service';
+import { BenefitsApiResponseMapped } from '../inss/inss.dto';
 
 @Processor(CONSTANTS.queue.processDocumentsQueueName)
 export class QueueProcessor {
@@ -40,13 +41,14 @@ export class QueueProcessor {
 
     const benefitsData = await this.inssService.getBenefitsData(cpf);
 
-    await this.saveDataByDocument(cpf, {
-      cpf,
-      benefitsData,
-    });
+    await this.saveDataByDocument(cpf, benefitsData);
   }
 
-  private async saveDataByDocument(cpf: string, data: any) {
+  private async saveDataByDocument(
+    cpf: string,
+    benefitsData: BenefitsApiResponseMapped[],
+  ) {
+    const data = { cpf, benefitsData };
     await this.esService.index(data);
     await this.redisService.set(cpf, data);
   }

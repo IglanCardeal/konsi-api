@@ -22,6 +22,8 @@ export class ESService {
       });
       return hits.hits.map((hit) => hit._source);
     } catch (error) {
+      if (error.meta?.body?.error?.type === 'index_not_found_exception')
+        return [];
       this.logger.error(
         `[${ESService.name}.searchByDocument()] Error searching document data`,
         error,
@@ -38,11 +40,15 @@ export class ESService {
     benefitsData: T;
   }): Promise<void> {
     try {
-      await this.elasticsearchService.index({
+      await this.elasticsearchService.update({
         index: CONSTANTS.elasticsearch.benefitsIndex,
+        id: cpf,
         body: {
-          cpf,
-          benefitsData,
+          doc: {
+            cpf,
+            benefitsData,
+          },
+          doc_as_upsert: true,
         },
       });
     } catch (error) {
