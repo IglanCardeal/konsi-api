@@ -15,46 +15,35 @@ export class QueueProcessor {
     private readonly inssService: INSSService,
   ) {}
 
-  /**
-   * This methods use the external benefits provider service to find data to each
-   * CPF document string. Then it saves the data to Elasticsearch and Redis cache.
-   *
-   * Redis cache is used to avoid duplicate data processing and overload the external API.
-   */
   @Process(CONSTANTS.queue.processDocumentsQueueJobName)
-  async handleProcessBenefits(job: Job<string[]>) {
-    const documents = job.data;
+  async handleProcessBenefits(job: Job<string>) {
+    const document = job.data;
 
     try {
+      await this.processDocument(document);
       this.logger.info(
-        `[${QueueProcessor.name}.handleProcessBenefits()] Starting process documents`,
-        { documents },
-      );
-
-      for (const cpf of documents) {
-        const cachedData = await this.redisService.get(cpf);
-        if (cachedData) continue;
-
-        const benefitsData = await this.inssService.getBenefitsData(cpf);
-        const data = {
-          cpf,
-          benefitsData,
-        };
-
-        await this.esService.index(data);
-
-        await this.redisService.set(cpf, data);
-      }
-
-      this.logger.info(
-        `[${QueueProcessor.name}.handleProcessBenefits()] Process documents success`,
-        { documents },
+        `[${QueueProcessor.name}.handleProcessBenefits()] Process document success`,
+        { document },
       );
     } catch (error) {
       this.logger.error(
-        `[${QueueProcessor.name}.handleProcessBenefits()] Error while processing documents: ${documents.join(', ')}`,
+        `[${QueueProcessor.name}.handleProcessBenefits()] Error while processing document: ${document}`,
         error,
       );
     }
+  }
+
+  private async processDocument(cpf: string) {
+    const cachedData = await this.redisService.get(cpf);
+    if (cachedData) return;
+
+    const benefitsData = await this.inssService.getBenefitsData(cpf);
+    const data = {
+      cpf,
+      benefitsData,
+    };
+
+    await this.esService.index(data);
+    await this.redisService.set(cpf, data);
   }
 }
