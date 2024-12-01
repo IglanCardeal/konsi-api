@@ -20,9 +20,7 @@ export class QueueProcessor {
     const document = job.data;
 
     try {
-      const data = await this.searchBenefitsByDocument(document);
-
-      await this.saveDataByDocument(document, data);
+      await this.searchBenefitsByDocument(document);
 
       this.logger.info(
         `[${QueueProcessor.name}.handleProcessBenefits()] Process document success`,
@@ -41,10 +39,11 @@ export class QueueProcessor {
     if (cachedData) return;
 
     const benefitsData = await this.inssService.getBenefitsData(cpf);
-    return {
+
+    await this.saveDataByDocument(cpf, {
       cpf,
       benefitsData,
-    };
+    });
   }
 
   private async saveDataByDocument(cpf: string, data: any) {
